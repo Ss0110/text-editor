@@ -2,6 +2,10 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 const path = require("path");
 const { InjectManifest } = require("workbox-webpack-plugin");
+const WorkboxPlugin = require("workbox-webpack-plugin");
+
+// DONE: Add and configure workbox plugins for a service worker and manifest file
+// DONE: Add CSS loaders and babel to webpack.
 
 module.exports = () => {
   return {
@@ -16,46 +20,50 @@ module.exports = () => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: "./src/index.html",
-        chunks: ["main"],
+        template: "./index.html",
+        title: "Webpack Plugin",
       }),
-      new HtmlWebpackPlugin({
-        template: "./src/install.html",
-        filename: "install.html",
-        chunks: ["install"],
+      new InjectManifest({
+        swSrc: "./src-sw.js",
+        swDest: "service-worker.js",
       }),
       new WebpackPwaManifest({
-        name: "My App",
-        short_name: "App",
-        description: "My Progressive Web App",
-        background_color: "#ffffff",
-        theme_color: "#000000",
+        name: "Just Another Text Editor",
+        short_name: "JATE",
+        description: "A text editor for online and offline use.",
+        background_color: "#7eb4e2",
+        theme_color: "#7eb4e2",
+        start_url: "/",
+        publicPath: "/",
+        fingerprints: false,
+        inject: true,
         icons: [
           {
-            src: path.resolve("./src/assets/icon.png"),
+            src: path.resolve("src/images/logo.png"),
             sizes: [96, 128, 192, 256, 384, 512],
-            purpose: "any maskable",
+            destination: path.join("assets", "icons"),
           },
         ],
       }),
-      new InjectManifest({
-        swSrc: "./src/service-worker.js",
-        swDest: "service-worker.js",
-      }),
     ],
+
     module: {
       rules: [
         {
-          test: /\.css$/,
+          test: /\.css$/i,
           use: ["style-loader", "css-loader"],
         },
         {
-          test: /\.js$/,
+          test: /\.m?js$/,
           exclude: /node_modules/,
           use: {
             loader: "babel-loader",
             options: {
               presets: ["@babel/preset-env"],
+              plugins: [
+                "@babel/plugin-proposal-object-rest-spread",
+                "@babel/transform-runtime",
+              ],
             },
           },
         },
